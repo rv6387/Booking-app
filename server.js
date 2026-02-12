@@ -10,18 +10,13 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
-//  Static Folder
+// Static Folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root Route (VERY IMPORTANT)
+// Root Route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// MongoDB Atlas Connection
-mongoose.connect("mongodb+srv://vrahul6387_db_user:plmCKBRLTCIjRPIO@book.uvvqnvu.mongodb.net/mydb?retryWrites=true&w=majority")
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log("MongoDB Error:", err));
 
 // Schema
 const BookingSchema = new mongoose.Schema({
@@ -48,8 +43,14 @@ app.post('/book', async (req, res) => {
     }
 });
 
-// Server Start
-app.listen(process.env.PORT || 5000, () =>
-    console.log("Server running")
-);
 
+// IMPORTANT FIX — connect first, then listen
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => {
+        console.log("MongoDB Connected");
+
+        app.listen(process.env.PORT || 5000, () => {
+            console.log("Server running");
+        });
+    })
+    .catch(err => console.log("MongoDB Error:", err));
